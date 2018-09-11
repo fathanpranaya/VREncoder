@@ -1,3 +1,4 @@
+  <head>
 <!doctype html>
 <!--
 Copyright 2016 The Chromium Authors. All rights reserved.
@@ -33,7 +34,7 @@ found in the LICENSE file.
         width: 100%;
       }
     </style>
-
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <!-- This entire block in only to facilitate dynamically enabling and
     disabling the WebVR polyfill, and is not necessary for most WebVR apps.
     If you want to use the polyfill in your app, just include the js file and
@@ -73,6 +74,7 @@ found in the LICENSE file.
       (function () {
       "use strict";
 
+      var HMDStreaming = true;
       var vrDisplay = null;
       var frameData = null;
       var projectionMat = mat4.create();
@@ -189,6 +191,7 @@ found in the LICENSE file.
       if (navigator.getVRDisplays) {
         frameData = new VRFrameData();
 
+
         navigator.getVRDisplays().then(function (displays) {
           if (displays.length > 0) {
             vrDisplay = displays[displays.length - 1];
@@ -261,7 +264,20 @@ found in the LICENSE file.
         if (vrDisplay) {
           vrDisplay.requestAnimationFrame(onAnimationFrame);
 
-          vrDisplay.getFrameData(frameData);
+          if (HMDStreaming) {
+            vrDisplay.getFrameData(frameData);
+          }
+          
+          //log IMU data
+          $(document).one("keyup", function (e) {
+            if (e.which === 32) { // if spacebar is pressed
+              HMDStreaming = false;
+              console.log('Data: ', frameData.pose.orientation[0]);
+            } else  {
+              HMDStreaming = true;
+              console.log('continue streaming');
+            }
+          });
 
           if (vrDisplay.isPresenting) {
             gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
